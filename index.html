@@ -109,6 +109,7 @@
     </style>
 </head>
 <body>
+<h3 id="game_status" style="position: absolute;top: 160px;color: #afaea7;">Score: 0</h3>
 <div class="game-container" id="game-container"></div>
 
 <script>
@@ -173,6 +174,7 @@
         if (moved) {
             addNewTile();
             renderBoard();
+            game_status.innerText = 'Score: ' + score
             checkGameOver();
         }
     }
@@ -257,7 +259,7 @@
         }
         return moved;
     }
-
+    const game_status = document.getElementById("game_status");
     function moveTilesRight() {
         let moved = false;
         for (let row = 0; row < gridSize; row++) {
@@ -293,12 +295,38 @@
                 }
             }
         }
-        alert('Game Over! Your score is: ' + score);
+        game_status.innerText = 'Game Over! Your score is: ' + score
+
+        //alert('Game Over! Your score is: ' + score);
     }
 
     document.addEventListener('keydown', (event) => {
+        let direction = "";
+
+        // Map WASD to Arrow keys
+        switch (event.key.toLowerCase()) {
+            case 'w':
+                direction = 'ArrowUp';
+                break;
+            case 'a':
+                direction = 'ArrowLeft';
+                break;
+            case 's':
+                direction = 'ArrowDown';
+                break;
+            case 'd':
+                direction = 'ArrowRight';
+                break;
+            default:
+                // If it's not WASD, use the original key
+                direction = event.key;
+        }
         if (event.key.startsWith('Arrow')) {
-            moveTiles(event.key);
+            direction = event.key
+        }
+        if (direction !== "") {
+            moveTiles(direction);
+
         }
     });
 
