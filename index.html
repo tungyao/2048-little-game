@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #faf8ef;
+        }
+
+        .game-container {
+            width: 400px;
+            height: 400px;
+            background-color: #bbada0;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+        }
+
+        .game-tile {
+            background-color: #eee4da;
+            border-radius: 5px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 32px;
+            font-weight: bold;
+            color: #776e65;
+        }
+
+        .game-tile-2 {
+            background-color: #eee4da;
+        }
+
+        .game-tile-4 {
+            background-color: #ede0c8;
+        }
+
+        .game-tile-8 {
+            background-color: #f2b179;
+        }
+
+        .game-tile-16 {
+            background-color: #f59563;
+        }
+
+        .game-tile-32 {
+            background-color: #f67c5f;
+        }
+
+        .game-tile-64 {
+            background-color: #f65e3b;
+        }
+
+        .game-tile-128 {
+            background-color: #edcf72;
+        }
+
+        .game-tile-256 {
+            background-color: #edcc61;
+        }
+
+        .game-tile-512 {
+            background-color: #edc850;
+        }
+
+        .game-tile-1024 {
+            background-color: #edc53f;
+        }
+
+        .game-tile-2048 {
+            background-color: #edc22e;
+        }
+
+        .game-tile-4096 {
+            background-color: #3c3a32;
+            color: #f9f6f2;
+        }
+
+        .game-tile-8192 {
+            background-color: #3c3a32;
+            color: #f9f6f2;
+        }
+
+        .game-tile-16384 {
+            background-color: #3c3a32;
+            color: #f9f6f2;
+        }
+
+        .game-tile-32768 {
+            background-color: #3c3a32;
+            color: #f9f6f2;
+        }
+
+        .game-tile-65536 {
+            background-color: #3c3a32;
+            color: #f9f6f2;
+        }
+    </style>
+</head>
+<body>
+<div class="game-container" id="game-container"></div>
+
+<script>
+    const gameContainer = document.getElementById('game-container');
+    const gridSize = 4;
+    let board = [];
+    let score = 0;
+
+    function initializeBoard() {
+        board = Array.from({length: gridSize}, () => Array(gridSize).fill(0));
+        addNewTile();
+        addNewTile();
+        renderBoard();
+    }
+
+    function addNewTile() {
+        const emptyTiles = [];
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (board[i][j] === 0) {
+                    emptyTiles.push({row: i, col: j});
+                }
+            }
+        }
+        if (emptyTiles.length > 0) {
+            const randomTile = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+            board[randomTile.row][randomTile.col] = Math.random() > 0.9 ? 4 : 2;
+        }
+    }
+
+    function renderBoard() {
+        gameContainer.innerHTML = '';
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                const tileValue = board[i][j];
+                const tileElement = document.createElement('div');
+                tileElement.classList.add('game-tile', `game-tile-${tileValue}`);
+                if (tileValue !== 0) {
+                    tileElement.textContent = tileValue;
+                }
+                gameContainer.appendChild(tileElement);
+            }
+        }
+    }
+
+    function moveTiles(direction) {
+        let moved = false;
+        switch (direction) {
+            case 'ArrowUp':
+                moved = moveTilesUp();
+                break;
+            case 'ArrowDown':
+                moved = moveTilesDown();
+                break;
+            case 'ArrowLeft':
+                moved = moveTilesLeft();
+                break;
+            case 'ArrowRight':
+                moved = moveTilesRight();
+                break;
+        }
+        if (moved) {
+            addNewTile();
+            renderBoard();
+            checkGameOver();
+        }
+    }
+
+    function moveTilesUp() {
+        let moved = false;
+        for (let col = 0; col < gridSize; col++) {
+            let lastMergeRow = -1;
+            for (let row = 1; row < gridSize; row++) {
+                if (board[row][col] !== 0) {
+                    let targetRow = row;
+                    while (targetRow > 0 && board[targetRow - 1][col] === 0) {
+                        targetRow--;
+                    }
+                    if (targetRow > 0 && board[targetRow - 1][col] === board[row][col] && lastMergeRow !== targetRow - 1) {
+                        board[targetRow - 1][col] *= 2;
+                        score += board[targetRow - 1][col];
+                        board[row][col] = 0;
+                        lastMergeRow = targetRow - 1;
+                        moved = true;
+                    } else if (targetRow !== row) {
+                        board[targetRow][col] = board[row][col];
+                        board[row][col] = 0;
+                        moved = true;
+                    }
+                }
+            }
+        }
+        return moved;
+    }
+
+    function moveTilesDown() {
+        let moved = false;
+        for (let col = 0; col < gridSize; col++) {
+            let lastMergeRow = gridSize;
+            for (let row = gridSize - 2; row >= 0; row--) {
+                if (board[row][col] !== 0) {
+                    let targetRow = row;
+                    while (targetRow < gridSize - 1 && board[targetRow + 1][col] === 0) {
+                        targetRow++;
+                    }
+                    if (targetRow < gridSize - 1 && board[targetRow + 1][col] === board[row][col] && lastMergeRow !== targetRow + 1) {
+                        board[targetRow + 1][col] *= 2;
+                        score += board[targetRow + 1][col];
+                        board[row][col] = 0;
+                        lastMergeRow = targetRow + 1;
+                        moved = true;
+                    } else if (targetRow !== row) {
+                        board[targetRow][col] = board[row][col];
+                        board[row][col] = 0;
+                        moved = true;
+                    }
+                }
+            }
+        }
+        return moved;
+    }
+
+    function moveTilesLeft() {
+        let moved = false;
+        for (let row = 0; row < gridSize; row++) {
+            let lastMergeCol = -1;
+            for (let col = 1; col < gridSize; col++) {
+                if (board[row][col] !== 0) {
+                    let targetCol = col;
+                    while (targetCol > 0 && board[row][targetCol - 1] === 0) {
+                        targetCol--;
+                    }
+                    if (targetCol > 0 && board[row][targetCol - 1] === board[row][col] && lastMergeCol !== targetCol - 1) {
+                        board[row][targetCol - 1] *= 2;
+                        score += board[row][targetCol - 1];
+                        board[row][col] = 0;
+                        lastMergeCol = targetCol - 1;
+                        moved = true;
+                    } else if (targetCol !== col) {
+                        board[row][targetCol] = board[row][col];
+                        board[row][col] = 0;
+                        moved = true;
+                    }
+                }
+            }
+        }
+        return moved;
+    }
+
+    function moveTilesRight() {
+        let moved = false;
+        for (let row = 0; row < gridSize; row++) {
+            let lastMergeCol = gridSize;
+            for (let col = gridSize - 2; col >= 0; col--) {
+                if (board[row][col] !== 0) {
+                    let targetCol = col;
+                    while (targetCol < gridSize - 1 && board[row][targetCol + 1] === 0) {
+                        targetCol++;
+                    }
+                    if (targetCol < gridSize - 1 && board[row][targetCol + 1] === board[row][col] && lastMergeCol !== targetCol + 1) {
+                        board[row][targetCol + 1] *= 2;
+                        score += board[row][targetCol + 1];
+                        board[row][col] = 0;
+                        lastMergeCol = targetCol + 1;
+                        moved = true;
+                    } else if (targetCol !== col) {
+                        board[row][targetCol] = board[row][col];
+                        board[row][col] = 0;
+                        moved = true;
+                    }
+                }
+            }
+        }
+        return moved;
+    }
+
+    function checkGameOver() {
+        for (let i = 0; i < gridSize; i++) {
+            for (let j = 0; j < gridSize; j++) {
+                if (board[i][j] === 0 || (i > 0 && board[i][j] === board[i - 1][j]) || (j > 0 && board[i][j] === board[i][j - 1])) {
+                    return;
+                }
+            }
+        }
+        alert('Game Over! Your score is: ' + score);
+    }
+
+    document.addEventListener('keydown', (event) => {
+        if (event.key.startsWith('Arrow')) {
+            moveTiles(event.key);
+        }
+    });
+
+    initializeBoard();
+</script>
+</body>
